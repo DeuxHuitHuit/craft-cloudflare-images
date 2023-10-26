@@ -1,0 +1,48 @@
+{
+  "name": "deuxhuithuit/craft-cloudflare-images",
+  "description": "Upload your images assets to Cloudflare Images from Craft CMS assets interface. Configure Craft's transform to use it.",
+  "type": "craft-plugin",
+  "version": "1.0.0",
+  "keywords": [
+    "cloudflare",
+    "images",
+    "video",
+    "craft-cms"
+  ],
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Deux Huit Huit",
+      "homepage": "https://deuxhuithuit.com"
+    }
+  ],
+  "support": {
+    "email": "open-source@deuxhuithuit.com",
+    "issues": "https://github.com/DeuxHuitHuit/craft-cloudflare-images/issues?state=open",
+    "source": "https://github.com/DeuxHuitHuit/craft-cloudflare-images",
+    "docs": "https://github.com/DeuxHuitHuit/craft-cloudflare-images/blob/dev/README.md"
+  },
+  "require": {
+    "php": "^8.1|^8.2",
+    "craftcms/cms": "^4.4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "deuxhuithuit\\cfimages\\": "src/"
+    }
+  },
+  "extra": {
+    "name": "Cloudflare Images",
+    "handle": "cloudflare-images",
+    "hasCpSettings": true
+  },
+  "config": {
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.22"
+  }
+}
