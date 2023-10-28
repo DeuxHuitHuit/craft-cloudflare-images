@@ -1,6 +1,6 @@
 {
   "name": "deuxhuithuit/craft-cloudflare-images",
-  "description": "Upload your images assets to Cloudflare Images from Craft CMS assets interface. Configure Craft's transform to use it.",
+  "description": "Upload your images assets to Cloudflare Images from Craft CMS assets interface. It exposes the a file system and supports craft image transforms.",
   "type": "craft-plugin",
   "version": "1.0.0",
   "keywords": [
@@ -26,6 +26,12 @@
     "php": "^8.1|^8.2",
     "craftcms/cms": "^4.4.0"
   },
+  "require-dev": {
+    "craftcms/ecs": "dev-main",
+    "craftcms/phpstan": "dev-main",
+    "friendsofphp/php-cs-fixer": "^3.35",
+    "squizlabs/php_codesniffer": "^3.7"
+  },
   "autoload": {
     "psr-4": {
       "deuxhuithuit\\cfimages\\": "src/"
@@ -36,13 +42,16 @@
     "handle": "cloudflare-images",
     "hasCpSettings": true
   },
+  "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
+    "phpstan": "phpstan --memory-limit=1G"
+  },
   "config": {
+    "sort-packages": true,
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
     }
-  },
-  "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.22"
   }
 }

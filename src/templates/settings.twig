@@ -1,0 +1,33 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.autosuggestField({
+  first: true,
+  label: 'Account ID'|t('cloudflare-images'),
+  instructions: 'Find your Account ID in the <a href="https://dash.cloudflare.com/" target="_blank">Cloudflare Dashboard</a>'|t('cloudflare-images'),
+  name: 'accountId',
+  value: settings.accountId,
+  errors: settings.getErrors('accountId'),
+  required: true,
+  suggestEnvVars: true
+}) }}
+
+{{ forms.autosuggestField({
+  first: true,
+  label: 'Account Hash'|t('cloudflare-images'),
+  instructions: 'Find your Account ID in the <a href="https://dash.cloudflare.com/" target="_blank">Cloudflare Dashboard</a>'|t('cloudflare-images'),
+  name: 'accountHash',
+  value: settings.accountHash,
+  errors: settings.getErrors('accountHash'),
+  required: true,
+  suggestEnvVars: true
+}) }}
+
+{{ forms.autosuggestField({
+  label: 'API Token'|t('cloudflare-images'),
+  instructions: 'Create a <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">Cloudflare API Token</a> with the <code>Cloudflare Images: Read</code> and <code>Cloudflare Images: Edit</code> permissions.'|t('cloudflare-images'),
+  name: 'apiToken',
+  value: settings.apiToken,
+  errors: settings.getErrors('apiToken'),
+  required: true,
+  suggestEnvVars: true
+}) }}
