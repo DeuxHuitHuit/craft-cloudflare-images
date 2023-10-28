@@ -54,7 +54,6 @@ class CloudflareImagesTransformer extends Component implements ImageTransformerI
     public function getTransformUrl(Asset $asset, ImageTransform|CloudflareImagesTransformBehavior $imageTransform, bool $immediately): string
     {
         $fs = $asset->getVolume()->getFs();
-        $transformFs = $asset->getVolume()->getTransformFs();
         $isCloudflareImageFs = $fs instanceof CloudflareImagesFs;
         $flexibleVariant = $this->generateFlexibleVariant($imageTransform);
 
