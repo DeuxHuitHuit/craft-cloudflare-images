@@ -35,7 +35,7 @@ class Filename
         }
     }
 
-    public static function fromParts($account, $id, $filename): string
+    public static function fromParts(string $account, string $id, string $filename): string
     {
         $sep = static::SEPARATOR;
         return "{$account}{$sep}{$id}{$sep}{$filename}";
