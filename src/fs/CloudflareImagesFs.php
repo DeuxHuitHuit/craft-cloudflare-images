@@ -249,7 +249,7 @@ class CloudflareImagesFs extends Fs
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath): void
+    public function renameFile(string $path, string $newPath, array $config = []): void
     {
         try {
             $imageId = Filename::toId($path);
@@ -267,7 +267,7 @@ class CloudflareImagesFs extends Fs
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath): void
+    public function copyFile(string $path, string $newPath, array $config = []): void
     {
         throw new FsException('Cloudflare Images does not support copying files');
     }
