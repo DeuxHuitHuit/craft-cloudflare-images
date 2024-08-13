@@ -25,7 +25,8 @@ class CloudflareImagesTransformer extends Component implements ImageTransformerI
             $transform[] = "fit={$imageTransform->mode}";
         }
         if ($imageTransform->position) {
-            $transform[] = "gravity={$imageTransform->position}";
+            $gravity = $this->positionToGravity($imageTransform);
+            $transform[] = "gravity={$gravity}";
         }
         if ($imageTransform->quality) {
             $transform[] = "quality={$imageTransform->quality}";
@@ -49,6 +50,19 @@ class CloudflareImagesTransformer extends Component implements ImageTransformerI
             return '';
         }
         return '/' . implode(',', $transform);
+    }
+
+    public function positionToGravity(ImageTransform $imageTransform)
+    {
+        $positions_map = [
+            'left' => 0,
+            'right' => 1,
+            'top' => 0,
+            'bottom' => 1,
+            'center' => 0.5
+        ];
+        [$x, $y] = explode('-', $imageTransform->position);
+        return implode('x', [$positions_map[$x], $positions_map[$y]]);
     }
 
     public function getTransformUrl(Asset $asset, ImageTransform|CloudflareImagesTransformBehavior $imageTransform, bool $immediately): string
