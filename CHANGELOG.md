@@ -2,6 +2,12 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.0.0 - 2024-08-13
+
+This is a breaking change since v2 only support Craft 5.
+
+* b0fb2e5a8d (feat) Craft 5 support (#4)
+
 ## 1.2.0 - 2024-06-06
 
 * 257fa1c414 (feat) impl: CloudflareImagesFs::fileExists()
