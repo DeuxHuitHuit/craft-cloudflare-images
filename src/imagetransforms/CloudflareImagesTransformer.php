@@ -60,7 +60,9 @@ class CloudflareImagesTransformer extends Component implements ImageTransformerI
             'bottom' => 1,
             'center' => 0.5
         ];
-        [$x, $y] = explode('-', $imageTransform->position);
+        $positions = explode('-', $imageTransform->position);
+        $x = $positions[0] ?? 'center';
+        $y = $positions[1] ?? 'center';
         return implode('x', [$positions_map[$x], $positions_map[$y]]);
     }
 
