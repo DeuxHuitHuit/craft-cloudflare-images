@@ -2,6 +2,10 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.0.1 - 2024-08-14
+
+* 0b4e69d766 (fix) Convert Craft image position to CF transforms gravity (#5)
+
 ## 2.0.0 - 2024-08-13
 
 This is a breaking change since v2 only support Craft 5.
