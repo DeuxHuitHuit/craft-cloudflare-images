@@ -63,7 +63,9 @@ class CloudflareImagesTransformer extends Component implements ImageTransformerI
         $positions = explode('-', $imageTransform->position);
         $x = $positions[0] ?? 'center';
         $y = $positions[1] ?? 'center';
-        return implode('x', [$positions_map[$x], $positions_map[$y]]);
+        $coordX = $positions_map[$x] ?? 0.5;
+        $coordY = $positions_map[$y] ?? 0.5;
+        return implode('x', [$coordX, $coordY]);
     }
 
     public function getTransformUrl(Asset $asset, ImageTransform|CloudflareImagesTransformBehavior $imageTransform, bool $immediately): string
