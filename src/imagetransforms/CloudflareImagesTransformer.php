@@ -25,8 +25,7 @@ class CloudflareImagesTransformer extends Component implements ImageTransformerI
             $transform[] = "fit={$imageTransform->mode}";
         }
         if ($imageTransform->position) {
-            $gravity = $this->positionToGravity($imageTransform);
-            $transform[] = "gravity={$gravity}";
+            $transform[] = "gravity={$this->positionToGravity($imageTransform)}";
         }
         if ($imageTransform->quality) {
             $transform[] = "quality={$imageTransform->quality}";
