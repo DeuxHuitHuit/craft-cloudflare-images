@@ -258,7 +258,7 @@ class CloudflareImagesFs extends Fs
             // This happens when the file is moved to another folder in the asset manager.
             $newCleanedPath = \dirname($newPath) . '/' . Filename::tryToFilename(\basename($newPath));
             $this->client->moveImage($newCleanedPath, $imageId, $image['meta']);
-            $this->recentFiles[$newPath] = $imageId;
+            $this->recentFiles[$newCleanedPath] = $imageId;
         } catch (\Exception $e) {
             throw new FsException($e->getMessage(), $e->getCode(), $e);
         }
