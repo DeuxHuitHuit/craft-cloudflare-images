@@ -64,33 +64,41 @@ class CloudflareImagesFs extends Fs
      */
     public function getFileList(string $directory = '', bool $recursive = true): \Generator
     {
+        if ($directory === '') {
+            $directory = '.';
+        }
         try {
-            $images = $this->client->listImages();
-            foreach ($images as $image) {
-                $dirname = isset($image['meta']['folder']) ? $image['meta']['folder'] : '';
-                $dirname = $dirname === '.' ? '' : $dirname;
-                $filename = isset($image['meta']['path']) ? basename($image['meta']['path']) : $image['filename'];
-                
-                if ($recursive) {
-                    if (strlen($directory) > 0 && !\str_starts_with("$dirname/", $directory)) {
-                        continue;
-                    }
-                } else {
-                    if ($dirname !== $directory && "$dirname/" !== $directory) {
-                        continue;
-                    }
-                }
+            $continueToken = null;
+            do {
+                $list = $this->client->listImages(100, $continueToken);
+                $images = $list['images'];
+                $continueToken = $list['continuation_token'];
 
-                yield new FsListing([
-                    'basename' => Filename::fromParts($this->settings->getAccountHash(), $image['id'], $filename),
-                    'dirname' => $dirname,
-                    'type' => 'file',
-                    'fileSize' => isset($image['meta']['size']) ? $image['meta']['size'] : 0,
-                    'dateModified' => isset($image['meta']['updated'])
-                        ? $image['meta']['updated']
-                        : (isset($image['meta']['created']) ? $image['meta']['created'] : 0),
-                ]);
-            }
+                foreach ($images as $image) {
+                    $dirname = isset($image['meta']['folder']) ? $image['meta']['folder'] : '';
+                    $filename = isset($image['meta']['path']) ? basename($image['meta']['path']) : $image['filename'];
+
+                    if ($recursive) {
+                        if ($directory != '.' && !\str_starts_with("$dirname/", $directory)) {
+                            continue;
+                        }
+                    } else {
+                        if ($dirname !== $directory && "$dirname/" !== $directory) {
+                            continue;
+                        }
+                    }
+
+                    yield new FsListing([
+                        'basename' => Filename::fromParts($this->settings->getAccountHash(), $image['id'], $filename),
+                        'dirname' => $dirname,
+                        'type' => 'file',
+                        'fileSize' => isset($image['meta']['size']) ? $image['meta']['size'] : 0,
+                        'dateModified' => isset($image['meta']['updated'])
+                            ? $image['meta']['updated']
+                            : (isset($image['meta']['created']) ? $image['meta']['created'] : 0),
+                    ]);
+                }
+            } while ($continueToken);
         } catch (\Exception $e) {
             throw new FsException($e->getMessage(), $e->getCode(), $e);
         }
@@ -173,7 +181,7 @@ class CloudflareImagesFs extends Fs
         $properFilename = Filename::fromParts(
             $this->settings->getAccountHash(),
             $recentId,
-            Filename::tryToFilename($asset->filename)
+            Filename::cleanParts($asset->filename)
         );
         // If the filename is already correct, we are done.
         // Somehow, we need to break the loop here, otherwise the asset will be saved again and again.
@@ -207,11 +215,6 @@ class CloudflareImagesFs extends Fs
         // There are no way for us to know if an image exists without its id
         if (!$path) {
             return false;
-        }
-
-        // Check if the file exists in the recent files
-        if (isset($this->recentFiles[$path])) {
-            return true;
         }
 
         // Check if the file exists in the cloudflare images
@@ -268,7 +271,7 @@ class CloudflareImagesFs extends Fs
             $image = $this->client->getImage($imageId);
             // Make sure we get rid of any parts in the new paths.
             // This happens when the file is moved to another folder in the asset manager.
-            $newCleanedPath = \dirname($newPath) . '/' . Filename::tryToFilename(\basename($newPath));
+            $newCleanedPath = \dirname($newPath) . '/' . Filename::cleanParts(\basename($newPath));
             $this->client->moveImage($newCleanedPath, $imageId, $image['meta']);
             $this->recentFiles[$newCleanedPath] = $imageId;
         } catch (\Exception $e) {
