@@ -95,6 +95,28 @@ class Plugin extends \craft\base\Plugin
 
             Event::on(
                 Asset::class,
+                Asset::EVENT_BEFORE_SAVE,
+                function (\craft\events\ModelEvent $event) {
+                    // If this isn't a new asset, we don't need to do anything
+                    if (!$this->isNewValidEvent($event)) {
+                        return;
+                    }
+
+                    /** @var Asset $asset */
+                    $asset = $event->sender;
+
+                    // If this asset is not using the Cloudflare Images volume, we don't need to do anything
+                    if (!$this->isAssetOnCloudflareImagesVolume($asset)) {
+                        return;
+                    }
+
+                    // Since this asset is on the Cloudflare Images volume, we need to make sure it's an image asset
+                    $event->isValid = $this->isImageAsset($asset);
+                }
+            );
+
+            Event::on(
+                Asset::class,
                 Asset::EVENT_AFTER_SAVE,
                 function(\craft\events\ModelEvent $event) {
                     /** @var \craft\elements\Asset */
@@ -130,5 +152,30 @@ class Plugin extends \craft\base\Plugin
             'cloudflare-images/settings',
             ['settings' => $this->getSettings()]
         );
+    }
+
+    private function isAssetOnCloudflareImagesVolume(Asset $asset): bool
+    {
+        return $asset->getVolume()->getFs() instanceof \deuxhuithuit\cfimages\fs\CloudflareImagesFs;
+    }
+
+    private function isImageAsset(?Asset $asset): bool
+    {
+        if (!$asset) {
+            return false;
+        }
+
+        return $asset->kind === Asset::KIND_IMAGE;
+    }
+
+    private function isNewImageAsset(?Asset $asset): bool
+    {
+        return $this->isImageAsset($asset)
+            && $asset->getScenario() === Asset::SCENARIO_CREATE;
+    }
+
+    private function isNewValidEvent(\craft\events\ModelEvent $event): bool
+    {
+        return $event->isNew && $event->isValid;
     }
 }
