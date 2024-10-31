@@ -17,7 +17,11 @@ class CloudflareImagesAssetBehavior extends Behavior
      */
     public function cloudflareImagesUrl(): string
     {
-        $parts = Filename::toParts($this->owner->filename);
-        return "https://imagedelivery.net/{$parts['account']}/{$parts['id']}";
+        try {
+            $parts = Filename::toParts($this->owner->filename);
+            return "https://imagedelivery.net/{$parts['account']}/{$parts['id']}";
+        } catch (\Exception $e) {
+            return '';
+        }
     }
 }
