@@ -154,9 +154,12 @@ class Plugin extends \craft\base\Plugin
                     if (ElementHelper::isDraftOrRevision($asset)) {
                         return;
                     }
-                    if ($asset->getVolume()->getTransformFs() instanceof \deuxhuithuit\cfimages\fs\CloudflareImagesFs) {
+                    if (!$this->isNewImageAsset($asset)) {
+                        return;
+                    }
+                    if ($this->isAssetOnCloudflareImagesVolume($asset)) {
                         /** @var \deuxhuithuit\cfimages\fs\CloudflareImagesFs */
-                        $fs = $asset->getVolume()->getTransformFs();
+                        $fs = $asset->getVolume()->getFs();
                         $fs->saveAsset($asset);
                     }
                 }
