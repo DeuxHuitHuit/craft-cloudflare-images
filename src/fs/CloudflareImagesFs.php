@@ -213,12 +213,15 @@ class CloudflareImagesFs extends Fs
             }
             $image = $this->client->getImage($imageId);
             if (isset($image['id'])) {
-                return true;
-            }
+                // The file exists, so let's make sure it is still in the same folder as the one we know about.
+                // If not, it means the file has been moved to a different folder
+                // and we need to tell Craft the new path is available.
+                $dirname = isset($image['meta']['folder']) ? $image['meta']['folder'] : '';
 
+                return $dirname === \dirname($path);
+            }
         } catch (\Exception $e) {
-            // ignore, must not exist
-            $imageId = null;
+            // ignore, must not exist...
         }
         return false;
     }
