@@ -2,6 +2,20 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.1.0 - 2024-11-02
+
+This release make it impossible to rename files. It was allowed but was causing issues with the files
+and could lead to data loss.
+
+* f87919cdeb (feat) Implement proper file index/listing
+* 18b4ce28b7 (fix) Bypass Craft for filename overwrite
+* 704352a69f (fix) Compare directories when a file is found
+* 2e8a958797 (fix) Silence errors if the file is broken
+* cc43fe164b (feat) Prevent file renaming
+* 64cb0cb926 (feat) Make sure only images are accepted
+* 5aeaa52132 (docs) Add docs about FS and Volumes
+* 18373f4a00 (fix) Use cleaned path in recentFiles
+
 ## 2.0.1 - 2024-08-14
 
 * 0b4e69d766 (fix) Convert Craft image position to CF transforms gravity (#5)
