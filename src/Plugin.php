@@ -102,9 +102,12 @@ class Plugin extends \craft\base\Plugin
                     if (ElementHelper::isDraftOrRevision($asset)) {
                         return;
                     }
-                    if ($asset->getVolume()->getTransformFs() instanceof \deuxhuithuit\cfimages\fs\CloudflareImagesFs) {
+                    if (!$this->isNewImageAsset($asset)) {
+                        return;
+                    }
+                    if ($this->isAssetOnCloudflareImagesVolume($asset)) {
                         /** @var \deuxhuithuit\cfimages\fs\CloudflareImagesFs */
-                        $fs = $asset->getVolume()->getTransformFs();
+                        $fs = $asset->getVolume()->getFs();
                         $fs->saveAsset($asset);
                     }
                 }
@@ -130,5 +133,25 @@ class Plugin extends \craft\base\Plugin
             'cloudflare-images/settings',
             ['settings' => $this->getSettings()]
         );
+    }
+
+    private function isAssetOnCloudflareImagesVolume(Asset $asset): bool
+    {
+        return $asset->getVolume()->getFs() instanceof \deuxhuithuit\cfimages\fs\CloudflareImagesFs;
+    }
+ 
+    private function isImageAsset(?Asset $asset): bool
+    {
+        if (!$asset) {
+            return false;
+        }
+ 
+        return $asset->kind === Asset::KIND_IMAGE;
+    }
+ 
+    private function isNewImageAsset(?Asset $asset): bool
+    {
+        return $this->isImageAsset($asset)
+            && $asset->getScenario() === Asset::SCENARIO_CREATE;
     }
 }

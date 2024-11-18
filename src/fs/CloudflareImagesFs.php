@@ -186,8 +186,20 @@ class CloudflareImagesFs extends Fs
         }
         $asset->cfId = $recentId;
         $asset->filename = $properFilename;
-        $asset->setScenario(Asset::SCENARIO_DEFAULT);
-        \Craft::$app->getElements()->saveElement($asset, true, true, false);
+        
+        // We need to bypass Craft's logic to rename the asset because it will try
+        // to manipulate the FileSystem's representation of the asset, which we don't want.
+        $result = \Craft::$app->getDb()
+            ->createCommand()
+            ->update('{{%assets}}', ['filename' => $properFilename], ['id' => $asset->id])
+            ->execute();
+ 
+        if (!$result) {
+            throw new \Exception('Failed to rename Cloudflare Images asset.');
+        }
+ 
+        // Then we need to update the asset's indexes to make Craft happy
+        \Craft::$app->getSearch()->indexElementAttributes($asset, ['filename']);
     }
 
     /**
