@@ -2,6 +2,10 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 1.2.1 - 2024-11-18
+
+* eb3a6d652c (fix) Port some fixes from v2
+
 ## 1.2.0 - 2024-06-06
 
 * 257fa1c414 (feat) impl: CloudflareImagesFs::fileExists()
