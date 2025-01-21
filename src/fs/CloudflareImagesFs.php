@@ -110,7 +110,7 @@ class CloudflareImagesFs extends Fs
     public function getFileSize(string $uri): int
     {
         try {
-            $imageId = Filename::toId($uri);
+            $imageId = Filename::toId($uri, $this->settings->getAccountHash());
             $image = $this->client->getImage($imageId);
             return $image['meta']['size'];
         } catch (\Exception $e) {
@@ -124,7 +124,7 @@ class CloudflareImagesFs extends Fs
     public function getDateModified(string $uri): int
     {
         try {
-            $imageId = Filename::toId($uri);
+            $imageId = Filename::toId($uri, $this->settings->getAccountHash());
             $image = $this->client->getImage($imageId);
             return isset($image['meta']['updated']) ? $image['meta']['updated'] : $image['meta']['created'];
         } catch (\Exception $e) {
@@ -219,7 +219,7 @@ class CloudflareImagesFs extends Fs
 
         // Check if the file exists in the cloudflare images
         try {
-            $imageId = Filename::toId(\basename($path));
+            $imageId = Filename::toId(\basename($path), $this->settings->getAccountHash());
             if (!$imageId) {
                 throw new \Exception('Failed to parse filename');
             }
@@ -245,7 +245,7 @@ class CloudflareImagesFs extends Fs
     {
         $imageId = null;
         try {
-            $imageId = Filename::toId($path);
+            $imageId = Filename::toId($path, $this->settings->getAccountHash());
             if (!$imageId) {
                 // Found an empty filename, let Craft handle it.
                 return;
@@ -267,7 +267,7 @@ class CloudflareImagesFs extends Fs
     public function renameFile(string $path, string $newPath, array $config = []): void
     {
         try {
-            $imageId = Filename::toId($path);
+            $imageId = Filename::toId($path, $this->settings->getAccountHash());
             $image = $this->client->getImage($imageId);
             // Make sure we get rid of any parts in the new paths.
             // This happens when the file is moved to another folder in the asset manager.
@@ -293,7 +293,9 @@ class CloudflareImagesFs extends Fs
     public function getFileStream(string $uriPath)
     {
         try {
-            return $this->client->getImageStream(Filename::toId($uriPath))->detach();
+            return $this->client->getImageStream(
+                Filename::toId($uriPath, $this->settings->getAccountHash())
+            )->detach();
         } catch (\Exception $e) {
             throw new FsException($e->getMessage(), $e->getCode(), $e);
         }
