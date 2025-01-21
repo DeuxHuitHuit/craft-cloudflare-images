@@ -2,10 +2,16 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.2.0 - 2025-01-22
+
+* f329d63daa (feat) Add directory operations: exists + delete (#9)
+* a9c67c89b2 (feat) Allow images to be moved across volume (#7)
+* 9f7f350c63 (fix) Add account id validation in filename pasing (#8)
+* a3ecaf2611 (feat) Add a filesize check
+
 ## 2.1.0 - 2024-11-02
 
-This release make it impossible to rename files. It was allowed but was causing issues with the files
-and could lead to data loss.
+This release make it impossible to rename files. It was allowed but was causing issues with the files and could lead to data loss.
 
 * f87919cdeb (feat) Implement proper file index/listing
 * 18b4ce28b7 (fix) Bypass Craft for filename overwrite
