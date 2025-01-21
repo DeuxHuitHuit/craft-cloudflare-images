@@ -330,4 +330,21 @@ class CloudflareImagesFs extends Fs
         // Left empty: Cloudflare do not support directories, let Craft handle it.
     }
     // #endregion
+
+    /**
+     * Returns true if the file is recent, i.e. a write operation has been performed on it.
+     * This is the case when the file its the Fs for the first time, either as
+     * a new asset or as a "moved from another volume" asset.
+     * It is also the case when the file is renamed.
+     *
+     * @see CloudflareImagesFs::writeFileFromStream()
+     * @see CloudflareImagesFs::renameFile()
+     *
+     * @param string $path The asset's path
+     * @return bool
+     */
+    public function isFileRecent(string $path): bool
+    {
+        return isset($this->recentFiles[$path]);
+    }
 }
