@@ -10,8 +10,9 @@ class ViewController extends Controller
     {
         $this->requireCpRequest();
         $filename = \basename($file);
-        $imageId = \deuxhuithuit\cfimages\Filename::toId($filename);
-        $client = \deuxhuithuit\cfimages\Plugin::getInstance()->client();
+        $plugin = \deuxhuithuit\cfimages\Plugin::getInstance();
+        $imageId = \deuxhuithuit\cfimages\Filename::toId($filename, $plugin->getSettings()->getAccountHash());
+        $client = $plugin->client();
         $image = $client->getImage($imageId);
         $content = $client->getImageStream($imageId)->getContents();
         $this->response->format = \craft\web\Response::FORMAT_RAW;

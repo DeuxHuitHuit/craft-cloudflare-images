@@ -9,11 +9,17 @@ class Filename
 {
     public const SEPARATOR = '.';
 
-    public static function toParts(string $filename): array
+    public static function toParts(string $filename, string $accountHash = null): array
     {
         $parts = \explode(static::SEPARATOR, $filename, 3);
         if (!isset($parts[2])) {
             throw new \Exception('Invalid filename: ' . $filename);
+        }
+        if (!isset($parts[0]) || !isset($parts[1])) {
+            throw new \Exception('Empty filename: ' . $filename);
+        }
+        if ($accountHash && $parts[0] !== $accountHash) {
+            throw new \Exception('Invalid account hash: ' . $parts[0]);
         }
         return [
             'account' => $parts[0],
@@ -22,9 +28,9 @@ class Filename
         ];
     }
 
-    public static function toId(string $filename): string
+    public static function toId(string $filename, string $accountHash = null): string
     {
-        $parts = static::toParts($filename);
+        $parts = static::toParts($filename, $accountHash);
         return $parts['id'];
     }
 
