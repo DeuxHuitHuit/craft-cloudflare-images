@@ -17,6 +17,7 @@ use yii\base\Event;
 
 class Plugin extends \craft\base\Plugin
 {
+    public const MAX_FILE_SIZE = 20000000;
     public bool $hasCpSettings = true;
     public string $schemaVersion = '1.0.0';
 
@@ -102,6 +103,12 @@ class Plugin extends \craft\base\Plugin
 
                     // If this asset is not using the Cloudflare Images volume, we don't need to do anything
                     if (!$this->isAssetOnCloudflareImagesVolume($asset)) {
+                        return;
+                    }
+
+                    if ($asset->getSize() && $asset->getSize() > self::MAX_FILE_SIZE) {
+                        \Craft::debug("Asset {$asset->getFileName()} {$asset->id} is too big", 'cloudflare-images');
+                        $event->isValid = false;
                         return;
                     }
 
