@@ -191,18 +191,18 @@ class CloudflareImagesFs extends Fs
 
         // Update in-memory values
         $asset->filename = $properFilename;
-        
+
         // We need to bypass Craft's logic to rename the asset because it will try
         // to manipulate the FileSystem's representation of the asset, which we don't want.
         $result = \Craft::$app->getDb()
             ->createCommand()
             ->update('{{%assets}}', ['filename' => $properFilename], ['id' => $asset->id])
             ->execute();
- 
+
         if (!$result) {
             throw new \Exception('Failed to rename Cloudflare Images asset.');
         }
- 
+
         // Then we need to update the asset's indexes to make Craft happy
         \Craft::$app->getSearch()->indexElementAttributes($asset, ['filename']);
     }
@@ -307,8 +307,20 @@ class CloudflareImagesFs extends Fs
      */
     public function directoryExists(string $path): bool
     {
-        // Left empty: Cloudflare do not support directories, let Craft handle it.
-        return true;
+        // Find all volumes
+        $volumes = \Craft::$app->getVolumes()->getAllVolumes();
+        // Keep only the volumes that use the Cloudflare Images Fs
+        $volumes = array_filter($volumes, function ($volume) {
+            return $volume->getFs() instanceof CloudflareImagesFs;
+        });
+        // Count the assets in the directory for each volume
+        $counts = array_map(function ($volume) use ($path) {
+            return Asset::find()->volumeId($volume->id)->folderPath($path)->count();
+        }, $volumes);
+
+        // Sum the counts and return true if there are any assets in the directory.
+        // This is a best effort, as we do not have folder structure in Cloudflare Images.
+        return array_sum($counts) > 0;
     }
 
     /**
@@ -324,7 +336,13 @@ class CloudflareImagesFs extends Fs
      */
     public function deleteDirectory(string $path): void
     {
-        // Left empty: Cloudflare do not support directories, let Craft handle it.
+        if (!$this->directoryExists($path)) {
+            // The directory is empty, let Craft handle it.
+            return;
+        }
+        // Cloudflare do not support directories and letting Craft handle it results in assets not being deleted
+        // in Cloudflare Images.
+        throw new FsException('Cloudflare Images does not support deleting non-empty directories');
     }
 
     public function renameDirectory(string $path, string $newName): void
