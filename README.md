@@ -17,12 +17,16 @@ composer require deuxhuithuit/craft-cloudflare-images
 craft plugin/install cloudflare-images
 ```
 
-3. Add your account id, account hash and api token in the settings.
+3. Add your account id, account hash and api token in the settings. Those can be found in your
+Cloudflare dashboard. We recommend to use env vars for this.
 
-4. Make sure Flexible Variants are enabled in your Cloudflare dashboard
+4. Go in craft and create a new File System using the Cloudflare Image FS. Also create a new Volume
+that uses this FS. It can be used as the main FS, or simply as a transform FS in an existing Volume.
+
+5. Make sure Flexible Variants are enabled in your Cloudflare dashboard
 (see https://developers.cloudflare.com/images/cloudflare-images/transform/flexible-variants/)
 
-5. Profit!
+6. Profit!
 
 Made with ❤️ in Montréal.
 

@@ -7,6 +7,8 @@ use GuzzleHttp;
 
 class CloudflareImagesClient
 {
+    const MAX_PER_PAGE = 10000;
+
     public string $baseUrl = 'https://api.cloudflare.com/client/v4/accounts/';
     /** @var \deuxhuithuit\cfimages\models\Settings? */
     public $config;
@@ -86,7 +88,6 @@ class CloudflareImagesClient
 
     public function moveImage(string $imageFilename, string $imageUid, array $meta = []): array
     {
-        $meta['path'] = $imageFilename;
         $meta['folder'] = \dirname($imageFilename);
         $meta['updated'] = time();
         $client = new GuzzleHttp\Client();
@@ -105,10 +106,15 @@ class CloudflareImagesClient
         return $data['result'];
     }
 
-    public function listImages($perPage = 10000, $continueToken = null): array
+    public function listImages($perPage = null, $continueToken = null): array
     {
         $client = new GuzzleHttp\Client();
-        $res = $client->request('GET', $this->createCfUrl("/images/v2?per_page=$perPage"), [
+        $perPage = $perPage ? min($perPage, self::MAX_PER_PAGE) : self::MAX_PER_PAGE;
+        $endpoint = "/images/v2?per_page=$perPage";
+        if ($continueToken) {
+            $endpoint .= "&continuation_token=$continueToken";
+        }
+        $res = $client->request('GET', $this->createCfUrl($endpoint), [
             'headers' => $this->createHttpHeaders(),
             'http_errors' => false,
         ]);
@@ -119,13 +125,17 @@ class CloudflareImagesClient
 
         $data = json_decode($res->getBody(), true);
 
-        if (!isset($data['result']['images'])) {
-            return [];
+        if (!isset($data['success']) || !$data['success'] || !isset($data['result']['images'])) {
+            return [
+                'images' => [],
+                'continuation_token' => null,
+            ];
         }
 
-        // TODO: Recursive call for the next page
-
-        return $data['result']['images'];
+        return [
+            'images' => $data['result']['images'],
+            'continuation_token' => $data['result']['continuation_token'],
+        ];
     }
 
     public function getImage(string $imageUid): array

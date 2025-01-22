@@ -95,6 +95,58 @@ class Plugin extends \craft\base\Plugin
 
             Event::on(
                 Asset::class,
+                Asset::EVENT_BEFORE_VALIDATE,
+                function(\yii\base\ModelEvent $event) {
+                    /** @var Asset $asset */
+                    $asset = $event->sender;
+
+                    // If this asset is not using the Cloudflare Images volume, we don't need to do anything
+                    if (!$this->isAssetOnCloudflareImagesVolume($asset)) {
+                        return;
+                    }
+
+                    // If this is a new asset, we don't need to do anything
+                    if ($this->isNewImageAsset($asset)) {
+                        return;
+                    }
+
+                    // Detect if the file is being moved/renamed
+                    if (!$asset->newLocation) {
+                        return;
+                    }
+
+                    // If the new location still includes the old filename, we don't need to do anything
+                    // since the file may simply be moved to a different folder on the same volume.
+                    // If not, we need to invalidate the event since the file is being renamed,
+                    // which is not possible for now...
+                    $event->isValid = \str_ends_with($asset->newLocation, $asset->filename);
+                }
+            );
+
+            Event::on(
+                Asset::class,
+                Asset::EVENT_BEFORE_SAVE,
+                function (\craft\events\ModelEvent $event) {
+                    // If this isn't a new asset, we don't need to do anything
+                    if (!$this->isNewValidEvent($event)) {
+                        return;
+                    }
+
+                    /** @var Asset $asset */
+                    $asset = $event->sender;
+
+                    // If this asset is not using the Cloudflare Images volume, we don't need to do anything
+                    if (!$this->isAssetOnCloudflareImagesVolume($asset)) {
+                        return;
+                    }
+
+                    // Since this asset is on the Cloudflare Images volume, we need to make sure it's an image asset
+                    $event->isValid = $this->isImageAsset($asset);
+                }
+            );
+
+            Event::on(
+                Asset::class,
                 Asset::EVENT_AFTER_SAVE,
                 function(\craft\events\ModelEvent $event) {
                     /** @var \craft\elements\Asset */
@@ -139,19 +191,24 @@ class Plugin extends \craft\base\Plugin
     {
         return $asset->getVolume()->getFs() instanceof \deuxhuithuit\cfimages\fs\CloudflareImagesFs;
     }
- 
+
     private function isImageAsset(?Asset $asset): bool
     {
         if (!$asset) {
             return false;
         }
- 
+
         return $asset->kind === Asset::KIND_IMAGE;
     }
- 
+
     private function isNewImageAsset(?Asset $asset): bool
     {
         return $this->isImageAsset($asset)
             && $asset->getScenario() === Asset::SCENARIO_CREATE;
+    }
+
+    private function isNewValidEvent(\craft\events\ModelEvent $event): bool
+    {
+        return $event->isNew && $event->isValid;
     }
 }

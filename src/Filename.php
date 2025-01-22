@@ -2,6 +2,9 @@
 
 namespace deuxhuithuit\cfimages;
 
+/**
+ * @internal
+ */
 class Filename
 {
     public const SEPARATOR = '.';
@@ -25,14 +28,10 @@ class Filename
         return $parts['id'];
     }
 
-    public static function tryToFilename(string $filename): string
+    public static function cleanParts(string $filename): string
     {
-        try {
-            $parts = static::toParts($filename);
-            return $parts['filename'];
-        } catch (\Throwable $e) {
-            return $filename;
-        }
+        $sep = static::SEPARATOR;
+        return preg_replace("/(^|\/)[A-z0-9\\+]+\\{$sep}[a-f0-9-]+\\{$sep}/", '', $filename, 1);
     }
 
     public static function fromParts(string $account, string $id, string $filename): string
