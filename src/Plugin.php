@@ -17,6 +17,7 @@ use yii\base\Event;
 
 class Plugin extends \craft\base\Plugin
 {
+    public const MAX_FILE_SIZE = 20000000;
     public bool $hasCpSettings = true;
     public string $schemaVersion = '1.0.0';
 
@@ -101,7 +102,13 @@ class Plugin extends \craft\base\Plugin
                     $asset = $event->sender;
 
                     // If this asset is not using the Cloudflare Images volume, we don't need to do anything
-                    if (!$this->isAssetOnCloudflareImagesVolume($asset)) {
+                    if (!$this->isAssetOnCloudflareImagesFs($asset)) {
+                        return;
+                    }
+
+                    if ($asset->getSize() && $asset->getSize() > self::MAX_FILE_SIZE) {
+                        \Craft::debug("Asset {$asset->getFileName()} {$asset->id} is too big", 'cloudflare-images');
+                        $event->isValid = false;
                         return;
                     }
 
@@ -112,6 +119,10 @@ class Plugin extends \craft\base\Plugin
 
                     // Detect if the file is being moved/renamed
                     if (!$asset->newLocation) {
+                        \Craft::debug(
+                            "No new location for {$asset->getFileName()} {$asset->id}",
+                            'cloudflare-images'
+                        );
                         return;
                     }
 
@@ -127,16 +138,20 @@ class Plugin extends \craft\base\Plugin
                 Asset::class,
                 Asset::EVENT_BEFORE_SAVE,
                 function (\craft\events\ModelEvent $event) {
-                    // If this isn't a new asset, we don't need to do anything
-                    if (!$this->isNewValidEvent($event)) {
-                        return;
-                    }
-
                     /** @var Asset $asset */
                     $asset = $event->sender;
 
                     // If this asset is not using the Cloudflare Images volume, we don't need to do anything
-                    if (!$this->isAssetOnCloudflareImagesVolume($asset)) {
+                    if (!$this->isAssetOnCloudflareImagesFs($asset)) {
+                        return;
+                    }
+
+                    // If this isn't a new asset nor a moved asset we don't need to do anything
+                    if (!$this->isNewValidEvent($event) && !$this->isMovedAssetImage($asset)) {
+                        \Craft::debug(
+                            "Not a new asset nor a moved asset {$asset->getFileName()} {$asset->id}",
+                            'cloudflare-images'
+                        );
                         return;
                     }
 
@@ -154,12 +169,39 @@ class Plugin extends \craft\base\Plugin
                     if (ElementHelper::isDraftOrRevision($asset)) {
                         return;
                     }
-                    if (!$this->isNewImageAsset($asset)) {
+
+                    // If this asset is not using the Cloudflare Images volume, we don't need to do anything
+                    if (!$this->isAssetOnCloudflareImagesFs($asset)) {
                         return;
                     }
-                    if ($this->isAssetOnCloudflareImagesVolume($asset)) {
-                        /** @var \deuxhuithuit\cfimages\fs\CloudflareImagesFs */
-                        $fs = $asset->getVolume()->getFs();
+
+                    /** @var \deuxhuithuit\cfimages\fs\CloudflareImagesFs */
+                    $fs = $asset->getVolume()->getFs();
+
+                    // Handle moved assets: Only act when the file is recent,
+                    // i.e. a write operation has been performed on it.
+                    // This is the case when a file is moved across volumes.
+                    if ($this->isMovedAssetImage($asset)) {
+                        if ($fs->isFileRecent($asset->getPath())) {
+                            \Craft::debug(
+                                "File is recent {$asset->getFileName()} {$asset->id}",
+                                'cloudflare-images'
+                            );
+                            $fs->saveAsset($asset);
+                        } else {
+                            \Craft::debug(
+                                "File is not recent {$asset->getFileName()} {$asset->id}",
+                                'cloudflare-images'
+                            );
+                        }
+                    }
+
+                    // This is a new image asset, we need to create it on Cloudflare Images
+                    else if ($this->isNewImageAsset($asset)) {
+                        \Craft::debug(
+                            "New image asset {$asset->getFileName()} {$asset->id}",
+                            'cloudflare-images'
+                        );
                         $fs->saveAsset($asset);
                     }
                 }
@@ -187,7 +229,7 @@ class Plugin extends \craft\base\Plugin
         );
     }
 
-    private function isAssetOnCloudflareImagesVolume(Asset $asset): bool
+    private function isAssetOnCloudflareImagesFs(Asset $asset): bool
     {
         return $asset->getVolume()->getFs() instanceof \deuxhuithuit\cfimages\fs\CloudflareImagesFs;
     }
@@ -205,6 +247,12 @@ class Plugin extends \craft\base\Plugin
     {
         return $this->isImageAsset($asset)
             && $asset->getScenario() === Asset::SCENARIO_CREATE;
+    }
+
+    private function isMovedAssetImage(?Asset $asset): bool
+    {
+        return $this->isImageAsset($asset)
+            && $asset->getScenario() === Asset::SCENARIO_MOVE;
     }
 
     private function isNewValidEvent(\craft\events\ModelEvent $event): bool

@@ -110,7 +110,7 @@ class CloudflareImagesFs extends Fs
     public function getFileSize(string $uri): int
     {
         try {
-            $imageId = Filename::toId($uri);
+            $imageId = Filename::toId($uri, $this->settings->getAccountHash());
             $image = $this->client->getImage($imageId);
             return $image['meta']['size'];
         } catch (\Exception $e) {
@@ -124,7 +124,7 @@ class CloudflareImagesFs extends Fs
     public function getDateModified(string $uri): int
     {
         try {
-            $imageId = Filename::toId($uri);
+            $imageId = Filename::toId($uri, $this->settings->getAccountHash());
             $image = $this->client->getImage($imageId);
             return isset($image['meta']['updated']) ? $image['meta']['updated'] : $image['meta']['created'];
         } catch (\Exception $e) {
@@ -191,18 +191,18 @@ class CloudflareImagesFs extends Fs
 
         // Update in-memory values
         $asset->filename = $properFilename;
-        
+
         // We need to bypass Craft's logic to rename the asset because it will try
         // to manipulate the FileSystem's representation of the asset, which we don't want.
         $result = \Craft::$app->getDb()
             ->createCommand()
             ->update('{{%assets}}', ['filename' => $properFilename], ['id' => $asset->id])
             ->execute();
- 
+
         if (!$result) {
             throw new \Exception('Failed to rename Cloudflare Images asset.');
         }
- 
+
         // Then we need to update the asset's indexes to make Craft happy
         \Craft::$app->getSearch()->indexElementAttributes($asset, ['filename']);
     }
@@ -219,7 +219,7 @@ class CloudflareImagesFs extends Fs
 
         // Check if the file exists in the cloudflare images
         try {
-            $imageId = Filename::toId(\basename($path));
+            $imageId = Filename::toId(\basename($path), $this->settings->getAccountHash());
             if (!$imageId) {
                 throw new \Exception('Failed to parse filename');
             }
@@ -245,7 +245,7 @@ class CloudflareImagesFs extends Fs
     {
         $imageId = null;
         try {
-            $imageId = Filename::toId($path);
+            $imageId = Filename::toId($path, $this->settings->getAccountHash());
             if (!$imageId) {
                 // Found an empty filename, let Craft handle it.
                 return;
@@ -267,7 +267,7 @@ class CloudflareImagesFs extends Fs
     public function renameFile(string $path, string $newPath): void
     {
         try {
-            $imageId = Filename::toId($path);
+            $imageId = Filename::toId($path, $this->settings->getAccountHash());
             $image = $this->client->getImage($imageId);
             // Make sure we get rid of any parts in the new paths.
             // This happens when the file is moved to another folder in the asset manager.
@@ -293,7 +293,9 @@ class CloudflareImagesFs extends Fs
     public function getFileStream(string $uriPath)
     {
         try {
-            return $this->client->getImageStream(Filename::toId($uriPath))->detach();
+            return $this->client->getImageStream(
+                Filename::toId($uriPath, $this->settings->getAccountHash())
+            )->detach();
         } catch (\Exception $e) {
             throw new FsException($e->getMessage(), $e->getCode(), $e);
         }
@@ -305,8 +307,20 @@ class CloudflareImagesFs extends Fs
      */
     public function directoryExists(string $path): bool
     {
-        // Left empty: Cloudflare do not support directories, let Craft handle it.
-        return true;
+        // Find all volumes
+        $volumes = \Craft::$app->getVolumes()->getAllVolumes();
+        // Keep only the volumes that use the Cloudflare Images Fs
+        $volumes = array_filter($volumes, function ($volume) {
+            return $volume->getFs() instanceof CloudflareImagesFs;
+        });
+        // Count the assets in the directory for each volume
+        $counts = array_map(function ($volume) use ($path) {
+            return Asset::find()->volumeId($volume->id)->folderPath($path)->count();
+        }, $volumes);
+
+        // Sum the counts and return true if there are any assets in the directory.
+        // This is a best effort, as we do not have folder structure in Cloudflare Images.
+        return array_sum($counts) > 0;
     }
 
     /**
@@ -322,7 +336,13 @@ class CloudflareImagesFs extends Fs
      */
     public function deleteDirectory(string $path): void
     {
-        // Left empty: Cloudflare do not support directories, let Craft handle it.
+        if (!$this->directoryExists($path)) {
+            // The directory is empty, let Craft handle it.
+            return;
+        }
+        // Cloudflare do not support directories and letting Craft handle it results in assets not being deleted
+        // in Cloudflare Images.
+        throw new FsException('Cloudflare Images does not support deleting non-empty directories');
     }
 
     public function renameDirectory(string $path, string $newName): void
@@ -330,4 +350,21 @@ class CloudflareImagesFs extends Fs
         // Left empty: Cloudflare do not support directories, let Craft handle it.
     }
     // #endregion
+
+    /**
+     * Returns true if the file is recent, i.e. a write operation has been performed on it.
+     * This is the case when the file its the Fs for the first time, either as
+     * a new asset or as a "moved from another volume" asset.
+     * It is also the case when the file is renamed.
+     *
+     * @see CloudflareImagesFs::writeFileFromStream()
+     * @see CloudflareImagesFs::renameFile()
+     *
+     * @param string $path The asset's path
+     * @return bool
+     */
+    public function isFileRecent(string $path): bool
+    {
+        return isset($this->recentFiles[$path]);
+    }
 }
