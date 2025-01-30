@@ -114,7 +114,7 @@ class Plugin extends \craft\base\Plugin
                         return;
                     }
 
-                    if ($asset->getSize() && $asset->getSize() > self::MAX_FILE_SIZE) {
+                    if ($asset->size && $asset->size > self::MAX_FILE_SIZE) {
                         \Craft::debug("Asset {$asset->getFileName()} {$asset->id} is too big", 'cloudflare-images');
                         $event->isValid = false;
                         return;
