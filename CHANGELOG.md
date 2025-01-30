@@ -2,6 +2,11 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.2.1 - 2025-01-31
+
+* 463311f168 (fix) Bug where getSize does not exists anymore?
+* 33f75409a7 (fix) Add a allowed mime type list
+
 ## 2.2.0 - 2025-01-22
 
 * f329d63daa (feat) Add directory operations: exists + delete (#9)
