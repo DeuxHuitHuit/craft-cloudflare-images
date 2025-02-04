@@ -2,6 +2,13 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 1.3.1 - 2025-02-05
+
+This is a port of all changes in v2, until 2.2.1.
+
+* 463311f168 (fix) Bug where getSize does not exists anymore?
+* 33f75409a7 (fix) Add a allowed mime type list
+
 ## 1.3.0 - 2025-01-22
 
 This is a port of all changes in v2, until 2.2.0.
