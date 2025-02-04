@@ -18,6 +18,14 @@ use yii\base\Event;
 class Plugin extends \craft\base\Plugin
 {
     public const MAX_FILE_SIZE = 20000000;
+    public const ALLOWED_FILE_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/svg+xml',
+    ];
+
     public bool $hasCpSettings = true;
     public string $schemaVersion = '1.0.0';
 
@@ -106,8 +114,14 @@ class Plugin extends \craft\base\Plugin
                         return;
                     }
 
-                    if ($asset->getSize() && $asset->getSize() > self::MAX_FILE_SIZE) {
+                    if ($asset->size && $asset->size > self::MAX_FILE_SIZE) {
                         \Craft::debug("Asset {$asset->getFileName()} {$asset->id} is too big", 'cloudflare-images');
+                        $event->isValid = false;
+                        return;
+                    }
+
+                    if (!in_array($asset->getMimeType(), self::ALLOWED_FILE_TYPES)) {
+                        \Craft::debug("Asset {$asset->getFileName()} {$asset->id} is not an allowed file type", 'cloudflare-images');
                         $event->isValid = false;
                         return;
                     }
