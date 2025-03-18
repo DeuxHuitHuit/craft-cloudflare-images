@@ -2,6 +2,12 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.2.2 - 2025-03-18
+
+* addc4f9ed1 (chore) Add a note about cloudflareImagesUrl()
+* ea38f9c0d9 (fix) Remove paths from filename
+* 795d6a13c1 (fix) Duplicated ID label
+
 ## 2.2.1 - 2025-01-31
 
 * 463311f168 (fix) Bug where getSize does not exists anymore?
