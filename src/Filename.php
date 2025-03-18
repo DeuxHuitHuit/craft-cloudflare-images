@@ -9,15 +9,20 @@ class Filename
 {
     public const SEPARATOR = '.';
 
-    public static function toParts(string $filename, string $accountHash = null): array
+    public static function toParts(string $filename, string|null $accountHash = null): array
     {
+        // Remove possible path from the filename: Asset->getStream() will request with
+        // the path, but we don't need it.
+        $filename = \basename($filename);
         $parts = \explode(static::SEPARATOR, $filename, 3);
-        if (!isset($parts[2])) {
-            throw new \Exception('Invalid filename: ' . $filename);
-        }
+
         if (!isset($parts[0]) || !isset($parts[1])) {
             throw new \Exception('Empty filename: ' . $filename);
         }
+        if (!isset($parts[2])) {
+            throw new \Exception('Invalid filename: ' . $filename);
+        }
+
         if ($accountHash && $parts[0] !== $accountHash) {
             throw new \Exception('Invalid account hash: ' . $parts[0]);
         }
@@ -28,7 +33,7 @@ class Filename
         ];
     }
 
-    public static function toId(string $filename, string $accountHash = null): string
+    public static function toId(string $filename, string|null $accountHash = null): string
     {
         $parts = static::toParts($filename, $accountHash);
         return $parts['id'];

@@ -2,6 +2,14 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 1.3.2 - 2025-03-18
+
+This is a port of all changes in v2, until 2.2.2.
+
+* addc4f9ed1 (chore) Add a note about cloudflareImagesUrl()
+* ea38f9c0d9 (fix) Remove paths from filename
+* 795d6a13c1 (fix) Duplicated ID labe
+
 ## 1.3.1 - 2025-02-05
 
 This is a port of all changes in v2, until 2.2.1.

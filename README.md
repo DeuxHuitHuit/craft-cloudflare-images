@@ -24,7 +24,11 @@ Cloudflare dashboard. We recommend to use env vars for this.
 that uses this FS. It can be used as the main FS, or simply as a transform FS in an existing Volume.
 
 5. Make sure Flexible Variants are enabled in your Cloudflare dashboard
-(see https://developers.cloudflare.com/images/cloudflare-images/transform/flexible-variants/)
+(see https://developers.cloudflare.com/images/cloudflare-images/transform/flexible-variants/).
+By default, Cloudflare Images do not generate publicly accessible images. Enabling flexible variants
+will generate publicly accessible images and allow for craft image transform to work. The public url
+is accessible via the `$asset->cloudflareImagesUrl()` method. If flexible variants are not enabled,
+the image is only accessible via Craft's Control Panel.
 
 6. Profit!
 
