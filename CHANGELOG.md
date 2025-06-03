@@ -2,6 +2,10 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.2.3 - 2025-06-03
+
+* 86c17ba420 (chore) Compat with php 8.4 (#12)
+
 ## 2.2.2 - 2025-03-18
 
 * addc4f9ed1 (chore) Add a note about cloudflareImagesUrl()
