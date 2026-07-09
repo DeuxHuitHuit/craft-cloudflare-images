@@ -2,6 +2,10 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.3.0 - 2026-07-09
+
+* 16dd3ebef4 Add download and reupload CLI for account migration
+
 ## 2.2.3 - 2025-06-03
 
 * 86c17ba420 (chore) Compat with php 8.4 (#12)
@@ -21,7 +25,7 @@ We try to maintain a complete change log, based on what is available in git.
 
 * f329d63daa (feat) Add directory operations: exists + delete (#9)
 * a9c67c89b2 (feat) Allow images to be moved across volume (#7)
-* 9f7f350c63 (fix) Add account id validation in filename pasing (#8)
+* 9f7f350c63 (fix) Add account id validation in filename passing (#8)
 * a3ecaf2611 (feat) Add a filesize check
 
 ## 2.1.0 - 2024-11-02
