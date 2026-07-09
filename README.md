@@ -32,6 +32,23 @@ the image is only accessible via Craft's Control Panel.
 
 6. Profit!
 
+## Account migration
+
+When moving images from one Cloudflare account to another:
+
+1. Run **download** while the plugin still uses the **old** account credentials.
+2. Update the plugin settings to the **new** account ID, hash, and API token.
+3. Run **reupload** with `--dry-run` first to validate local files, then without it to upload.
+
+```sh
+php craft cloudflare-images/download <volume>
+# update CLOUDFLARE_* env vars / plugin settings
+php craft cloudflare-images/reupload <volume> --dry-run
+php craft cloudflare-images/reupload <volume>
+```
+
+Reupload skips assets already on the current account. Use `--force` to upload them again.
+
 Made with ❤️ in Montréal.
 
 (c) Deux Huit Huit

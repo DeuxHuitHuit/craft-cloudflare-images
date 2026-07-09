@@ -33,7 +33,12 @@ class Plugin extends \craft\base\Plugin
     {
         \Craft::setAlias('@plugin/cloudflare-images', $this->getBasePath());
         \Craft::setAlias('@plugin/cloudflare-images/resources', $this->getBasePath() . DIRECTORY_SEPARATOR . 'resources');
-        $this->controllerNamespace = 'deuxhuithuit\cfimages\controllers';
+
+        if (\Craft::$app->getRequest()->getIsConsoleRequest()) {
+            $this->controllerNamespace = 'deuxhuithuit\cfimages\console\controllers';
+        } else {
+            $this->controllerNamespace = 'deuxhuithuit\cfimages\controllers';
+        }
 
         // Base template directory
         Event::on(
