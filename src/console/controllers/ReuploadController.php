@@ -135,7 +135,9 @@ class ReuploadController extends Controller
                         $this->updateAssetFilename($asset, $result['id'], $accountHash);
                     }
                 } finally {
-                    \fclose($stream);
+                    if (\is_resource($stream)) {
+                        \fclose($stream);
+                    }
                 }
 
                 $processed++;
