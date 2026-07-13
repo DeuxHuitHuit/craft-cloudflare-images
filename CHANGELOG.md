@@ -2,6 +2,10 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.3.1 - 2026-07-13
+
+* 7ff3cb28ed (fix) Guard fclose after reupload stream is consumed by Guzzle
+
 ## 2.3.0 - 2026-07-09
 
 * 16dd3ebef4 Add download and reupload CLI for account migration
