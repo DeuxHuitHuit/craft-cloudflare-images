@@ -2,6 +2,10 @@
 
 We try to maintain a complete change log, based on what is available in git.
 
+## 2.3.2 - 2026-08-31
+
+* 6e99480be9 (chore) Support php 8.5+8.6
+
 ## 2.3.1 - 2026-07-13
 
 * 7ff3cb28ed (fix) Guard fclose after reupload stream is consumed by Guzzle
